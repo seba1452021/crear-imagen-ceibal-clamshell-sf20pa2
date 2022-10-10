@@ -10,7 +10,7 @@
 
  echo -e '\n\tdefault="output"\n\targs="${@}"\n' >> ${file}
 
- echo -e '\nusage () {\ncat <<EOF' >> ${file}; ceibal-laptop -h >> ${file}; echo -e 'EOF\nexit $exit_num\n}\n' >> ${file}
+ echo -e '\nusage () {\ncat <<EOF' >> ${file}; ceibal-laptop -h >> ${file}; echo -e 'EOF\nexit ${exit_num}\n}\n' >> ${file}
 
  echo -e '\toutput () { for x in "${id}" "${model}" "${family}" "${build}"; do if [ "$x" != "" ]; then echo "${x}"; fi; done; }' >> ${file}
  echo -e '\tvalues () { output | cut -d " " -f2; }' >> ${file}
@@ -19,9 +19,9 @@
 
  echo -e 'for n in ${args}; do' >> ${file}
  echo -e ' case ${n} in\n  -i|--id) ;; -m|--model) ;; -f|--family) ;; -b|--build) ;; --values) default=values ;;' >> ${file}
- echo -e '  -?|-h|--help) exit_num=0 ;; *) echo "option ${n} not recognized" >&2; exit_num=1 ;;\n esac\ndone' >> ${file}
+ echo -e '  -?|-h|--help) exit_num="0" ;; *) echo "option ${n} not recognized" >&2; exit_num="1" ;;\n esac\ndone' >> ${file}
 
- echo -e '\n\tif [ -z "$exit_num" ]; then usage; fi\n\n\n' >> ${file}
+ echo -e '\n\tif [ ! -z "$exit_num" ]; then usage; fi\n\n\n' >> ${file}
 
  echo -e 'for n in $(echo "$args" | sed -e "s/--values//g"); do\n case ${n} in' >> ${file}
 

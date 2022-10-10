@@ -1,0 +1,4 @@
+# crear-imagen-ceibal-clamshell-sf20pa2
+sigo haciendo experimentos....
+crea una distro basada en debian utilizando debootstrap.
+exporte la configuracion de idioma y otros, hasta algunas utilidades a esta nueva imagen, no-oficial para el equipo.

@@ -15,24 +15,40 @@
  echo -e '\toutput () { for x in "${id}" "${model}" "${family}" "${build}"; do if [ "$x" != "" ]; then echo "${x}"; fi; done; }' >> ${file}
  echo -e '\tvalues () { output | cut -d " " -f2; }' >> ${file}
 
- echo -e '\n\tif [ "${args}" = "" ]; then usage; fi\n\n' >> ${file}
+ echo -e '\n\tif [ "${args}" = "" ]; then usage; fi\n\tif [ "${args}" = "--values" ]; then usage; fi\n' >> ${file}
 
- echo -e 'for n in ${args}; do' >> ${file}
- echo -e ' case ${n} in\n  -i|--id) ;; -m|--model) ;; -f|--family) ;; -b|--build) ;; --values) default=values ;;' >> ${file}
- echo -e '  -?|-h|--help) exit_num="0" ;; *) echo "option ${n} not recognized" >&2; exit_num="1" ;;\n esac\ndone' >> ${file}
-
+ echo '
+for n in $args; do i="n"
+if [ "$n" = "-i" ]; then i="s"; fi
+if [ "$n" = "--id" ]; then i="s"; fi
+if [ "$n" = "-m" ]; then i="s"; fi
+if [ "$n" = "--model" ]; then i="s"; fi
+if [ "$n" = "-f" ]; then i="s"; fi
+if [ "$n" = "--family" ]; then i="s"; fi
+if [ "$n" = "-b" ]; then i="s"; fi
+if [ "$n" = "--build" ]; then i="s"; fi
+if [ "$n" = "-?" ]; then i="s" && exit_num="0"; fi
+if [ "$n" = "-h" ]; then i="s" && exit_num="0"; fi
+if [ "$n" = "--help" ]; then i="s" && exit_num="0"; fi
+if [ "$n" = "--values" ]; then i="s" && default="values"; fi
+if [ "$i" != "s" ]; then echo "option “$n” not recognized" >&2; exit_num="1"; fi
+done
+ ' >> ${file}
+ 
  echo -e '\n\tif [ ! -z "$exit_num" ]; then usage; fi\n\n\n' >> ${file}
+ 
+ echo 'for n in $(echo "$args" | sed -e "s/--values//g" -e "s/--id/-i/g" -e "s/--model/-m/g" -e "s/--family/-f/g" -e "s/--build/-b/g"); do
+case $n in
+-i) id="ceibal-laptop-id" modelo="" family="" build="" ;;
+-m) id="" modelo="ceibal-laptop-model" family="" build="" ;; 
+-f) id="" modelo="" family="ceibal-laptop-family" build="" ;;
+-b) id="" modelo="" family="" build="ceibal-laptop-build" ;;
+esac
+"$default"
+done
+' >> ${file}
 
- echo -e 'for n in $(echo "$args" | sed -e "s/--values//g"); do\n case ${n} in' >> ${file}
-
- cat >> ${file} <<' EOF2' 
-	     -i|--id) id="ceibal-laptop-id" model="" family="" build="" ;;
-	     -m|--model) id="" model="ceibal-laptop-model" family="" build="" ;;
-	     -f|--family) id="" model="" family="ceibal-laptop-family" build="" ;;
-	     -b|--build) id="" model="" family="" build="ceibal-laptop-build" ;;
- EOF2
-
- echo -e ' esac\n ${default}\ndone\n\n\nexit 0' >> ${file}
+ echo -e '\nexit 0' >> ${file}
 
  sed -i 's/ID/el identificador/g' ${file}
  sed -i 's/ model/ modelo/g' ${file}
@@ -56,7 +72,7 @@
  sed -i "s/ceibal-laptop-build/$(ceibal-laptop -b)/g" ${file}
 
  ceibal_laptop_file="$(which ceibal-laptop)"; sed -i "s|${ceibal_laptop_file}|ceibal-laptop-file|g" ${file}
- sed -i 's|ceibal-laptop-file|$(readlink -f ${0})|g' ${file}
+ sed -i 's|ceibal-laptop-file|$(readlink -f $0)|g' ${file}
  
  echo "mv ${file} $ceibal_laptop_file" >> ./control.txt
  

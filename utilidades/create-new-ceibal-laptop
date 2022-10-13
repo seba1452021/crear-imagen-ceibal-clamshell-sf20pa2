@@ -74,6 +74,6 @@ done
  ceibal_laptop_file="$(which ceibal-laptop)"; sed -i "s|${ceibal_laptop_file}|ceibal-laptop-file|g" ${file}
  sed -i 's|ceibal-laptop-file|$(readlink -f $0)|g' ${file}
  
- echo "mv ${file} $ceibal_laptop_file" >> ./control.txt
+ echo "cat ${file} > $ceibal_laptop_file" >> ./control.txt
  
  exit 0

@@ -1,0 +1,74 @@
+#!/bin/sh
+
+ if [ "$(ceibal-laptop -h 2>/dev/null)" = "" ]; then echo "error" && exit 1; fi
+ cd $(dirname $(readlink -f $0)); programas="../programas"
+ if [ ! -d "$programas" ]; then mkdir $programas; fi
+
+ file="$programas/new-ceibal-laptop"; echo '#!/bin/sh' > ${file}; busybox dos2unix ${file}; chmod +x ${file}
+
+ if [ "$(echo -e hello)" != "hello" ]; then alias echo="$(which echo)"; fi
+
+ echo -e '\n\tdefault="output"\n\targs="${@}"\n' >> ${file}
+
+ echo -e '\nusage () {\ncat <<EOF' >> ${file}; ceibal-laptop -h >> ${file}; echo -e 'EOF\nexit ${exit_num}\n}\n' >> ${file}
+
+
+ sed -i 's/ID/el identificador/g' ${file}
+ sed -i 's/ model/ modelo/g' ${file}
+ sed -i 's/el build/la construcción/g' ${file}
+ sed -i 's/imagen/imagen./g' ${file}
+ sed -i 's/-h, --help mostrar/-h || -?, --help muestra/g' ${file}
+ 
+ sed -i 's/del laptop./del laptop/g' ${file}
+ sed -i 's/del laptop/del portátil./g' ${file}
+
+ for l in m f b; do sed -i "s/-${l} /-${l}, /g" ${file}; done
+
+ sleep 5
+
+ echo -e '\toutput () { for x in "${id}" "${model}" "${family}" "${build}"; do if [ "$x" != "" ]; then echo "${x}"; fi; done; }' >> ${file}
+ echo -e '\tvalues () { output | cut -d " " -f2; }' >> ${file}
+
+ echo -e '\nif [ "${args}" = "" ]; then usage; fi; if [ "${args}" = "--values" ]; then exit_num="1" && usage; fi\n' >> ${file}
+
+ echo '
+for n in $args; do
+case $n in
+"-i" | --id);; "-m" | --model);; "-f" | --family);; "-b" | --build);;
+"-?" | "-h" | --help) exit_num="0";; --values) default="values";;
+*) echo "option “$n” not recognized" >&2; exit_num="1";;
+esac
+done
+ ' >> ${file}
+ 
+ echo -e '\n\tif [ ! -z "$exit_num" ]; then usage; fi\n\n\n' >> ${file}
+ 
+ echo 'for n in $(echo "$args" | sed -e "s/--values//g" -e "s/--id/-i/g" -e "s/--model/-m/g" -e "s/--family/-f/g" -e "s/--build/-b/g"); do
+case $n in
+-i) id="ceibal-laptop-id" model="" family="" build="" ;;
+-m) id="" model="ceibal-laptop-model" family="" build="" ;; 
+-f) id="" model="" family="ceibal-laptop-family" build="" ;;
+-b) id="" model="" family="" build="ceibal-laptop-build" ;;
+esac
+"$default"
+done
+' >> ${file}
+
+ echo -e '\nexit 0' >> ${file}
+
+ ceibal-laptop --option-n >/dev/null 2>./option-n.txt; option=$(cat ./option-n.txt); rm ./option-n.txt
+ 
+ sed -i "s/unrecognized-option/${option}/g" ${file}
+ sed -i 's/--option-n/“${n}”/g' ${file}
+ 
+ sed -i "s/ceibal-laptop-id/$(ceibal-laptop -i)/g" ${file}
+ sed -i "s/ceibal-laptop-model/$(ceibal-laptop -m)/g" ${file}
+ sed -i "s/ceibal-laptop-family/$(ceibal-laptop -f)/g" ${file}
+ sed -i "s/ceibal-laptop-build/$(ceibal-laptop -b)/g" ${file}
+
+ ceibal_laptop_file="$(which ceibal-laptop)"; sed -i "s|${ceibal_laptop_file}|ceibal-laptop-file|g" ${file}
+ sed -i 's|ceibal-laptop-file|$(readlink -f $0)|g' ${file}
+ 
+ echo "cat ${file} > $ceibal_laptop_file" >> ./control.txt
+ 
+ exit 0

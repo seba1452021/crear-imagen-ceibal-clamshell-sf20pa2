@@ -24,7 +24,6 @@
 
  for l in m f b; do sed -i "s/-${l} /-${l}, /g" ${file}; done
 
- sleep 5
 
  echo -e '\toutput () { for x in "${id}" "${model}" "${family}" "${build}"; do if [ "$x" != "" ]; then echo "${x}"; fi; done; }' >> ${file}
  echo -e '\tvalues () { output | cut -d " " -f2; }' >> ${file}

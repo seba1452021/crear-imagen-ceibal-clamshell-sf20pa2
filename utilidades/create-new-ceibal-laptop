@@ -15,23 +15,15 @@
  echo -e '\toutput () { for x in "${id}" "${model}" "${family}" "${build}"; do if [ "$x" != "" ]; then echo "${x}"; fi; done; }' >> ${file}
  echo -e '\tvalues () { output | cut -d " " -f2; }' >> ${file}
 
- echo -e '\n\tif [ "${args}" = "" ]; then usage; fi\n\tif [ "${args}" = "--values" ]; then usage; fi\n' >> ${file}
+ echo -e '\nif [ "${args}" = "" ]; then usage; fi; if [ "${args}" = "--values" ]; then exit_num="1" && usage; fi\n' >> ${file}
 
  echo '
-for n in $args; do i="n"
-if [ "$n" = "-i" ]; then i="s"; fi
-if [ "$n" = "--id" ]; then i="s"; fi
-if [ "$n" = "-m" ]; then i="s"; fi
-if [ "$n" = "--model" ]; then i="s"; fi
-if [ "$n" = "-f" ]; then i="s"; fi
-if [ "$n" = "--family" ]; then i="s"; fi
-if [ "$n" = "-b" ]; then i="s"; fi
-if [ "$n" = "--build" ]; then i="s"; fi
-if [ "$n" = "-?" ]; then i="s" && exit_num="0"; fi
-if [ "$n" = "-h" ]; then i="s" && exit_num="0"; fi
-if [ "$n" = "--help" ]; then i="s" && exit_num="0"; fi
-if [ "$n" = "--values" ]; then i="s" && default="values"; fi
-if [ "$i" != "s" ]; then echo "option “$n” not recognized" >&2; exit_num="1"; fi
+for n in $args; do
+case $n in
+"-i" | --id);; "-m" | --model);; "-f" | --family);; "-b" | --build);;
+"-?" | "-h" | --help) exit_num="0";; --values) default="values";;
+*) echo "option “$n” not recognized" >&2; exit_num="1";;
+esac
 done
  ' >> ${file}
  
